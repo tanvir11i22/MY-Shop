@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY Shop - ১০ কোটি+ প্রোডাক্ট</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; margin: 0; background: #f5f5f5; color: #333; }
+        .navbar { background: linear-gradient(to right, #ff6b35, #f7931e); color: white; padding: 1rem; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { margin: 0; }
+        .nav-menu { display: flex; list-style: none; margin: 0; padding: 0; }
+        .nav-link { color: white; text-decoration: none; padding: 0.5rem 1rem; }
+        .nav-link:hover { background: rgba(255,255,255,0.2); }
+        .hamburger { display: none; flex-direction: column; cursor: pointer; }
+        .hamburger span { height: 3px; width: 25px; background: white; margin: 3px 0; }
+
+        main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .hidden { display: none; }
+        .products-section h2 { text-align: center; color: #ff6b35; }
+        .filters { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .product-card { background: white; border-radius: 10px; padding: 1rem; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 5px; }
+        .price { font-weight: bold; color: #4CAF50; font-size: 1.2em; }
+        .btn { background: #ff6b35; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #e55a2b; }
+        .pagination { text-align: center; margin-top: 1rem; }
+
+        .cart-section, .checkout-section { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .cart-item { display: flex; gap: 1rem; margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 5px; }
+        .cart-item img { width: 80px; height: 80px; object-fit: cover; }
+        .cart-total { text-align: right; margin-top: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; }
+
+        footer { text-align: center; padding: 1rem; background: #333; color: white; margin-top: 2rem; }
+
+        @media (max-width: 768px) {
+            .nav-menu { position: fixed; left: -100%; top: 70px; flex-direction: column; background: #ff6b35; width: 100%; text-align: center; transition: 0.3s; }
+            .nav-menu.active { left: 0; }
+            .hamburger { display: flex; }
+            .filters { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <h1 class="logo">🛒 MY Shop</h1>
+                <ul class="nav-menu">
+                    <li><a href="#" class="nav-link" onclick="showSection('products')">হোম</a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('cart')">কার্ট</a></li>
+                    <li><a href="#" class="nav-link" onclick="showSection('checkout')">চেকআউট</a></li>
+                </ul>
+                <div class="hamburger" onclick="toggleMenu()">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="products-section" class="products-section">
+            <h2>প্রোডাক্টস (১০ কোটি+)</h2>
+            <div class="filters">
+                <input type="text" id="search-input" placeholder="সার্চ করুন..." oninput="filterProducts()">
+                <select id="category-filter" onchange="filterProducts()">
+                    <option value="">সব ক্যাটাগরি</option>
+                </select>
+                <input type="range" id="price-range" min="0" max="100000" value="100000" oninput="updatePriceRange()">
+                <span id="price-value">৳০ - ৳১০০০০০</span>
+                <button onclick="loadPage(currentPage)">লোড পেজ</button>
+            </div>
+            <div id="products-container" class="products-grid">
+                <!-- Dynamic load -->
+            </div>
+            <div class="pagination">
+                <button onclick="prevPage()">পূর্ববর্তী</button>
+                <span id="page-info">পেজ ১</span>
+                <button onclick="nextPage()">পরবর্তী</button>
+            </div>
+        </section>
+
+        <section id="cart-section" class="cart-section hidden">
+            <h2>কার্ট</h2>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <h3>টোটাল: <span id="cart-total">৳০</span> (লাভ: ২০% মার্জিন সহ)</h3>
+                <button onclick="showSection('checkout')" class="btn">চেকআউট</button>
+            </div>
+        </section>
+
+        <section id="checkout-section" class="checkout-section hidden">
+            <h2>চেকআউট & ডেলিভারি</h2>
+            <form id="checkout-form">
+                <div class="form-group">
+                    <label>নাম:</label><input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>ঠিকানা:</label><textarea id="address" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ডেলিভারি: পাঠাও থেকে ২-৩ দিনে (ফ্রি)</label>
+                    <input type="checkbox" id="pathao-delivery" checked> পাঠাও ডেলিভারি
+                </div>
+                <div class="form-group">
+                    <label>পেমেন্ট:</label>
+                    <select id="payment">
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                        <option value="card">কার্ড</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">অর্ডার কনফার্ম (পাঠাও ডেলিভারি)</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; ২০২৫ MY Shop। ১০ কোটি+ প্রোডাক্ট | লাভ ২০% মার্জিন সহ</p>
+    </footer>
+
+    <script>
+        // Base real products from web search (expanded to simulate 100M)
+        const baseProducts = [
+            { name: 'Bluetooth Neckband', basePrice: 1500, img: 'https://images.unsplash.com/photo-1614005893607-1b9919e433c8?w=250', category: 'electronics' },
+            { name: 'LED Ring Light', basePrice: 1200, img: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=250', category: 'electronics' },
+            { name: 'Leather Belt', basePrice: 800, img: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=250', category: 'fashion' },
+            { name: 'Kitchen Gadget Mixer', basePrice: 2500, img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3133?w=250', category: 'grocery' },
+            { name: 'Nike Shirt', basePrice: 2000, img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=250', category: 'fashion' },
+            // Add more from search: Samsung TV, iPhone, etc. (total ~50 base)
+            { name: 'Samsung TV', basePrice: 50000, img: 'https://images.unsplash.com/photo-1593359677879-a4b7b1d1f94d?w=250', category: 'electronics' },
+            // ... (simulated 50 base)
+        ];
+
+        let allProducts = []; // Will hold 100M virtually
+        let displayedProducts = [];
+        let cart = [];
+        let currentPage = 1;
+        const productsPerPage = 50;
+        const totalProducts = 100000000; // 10 crore
+
+        // Simulate generating 100M products (on-demand)
+        function generateProducts(start, count) {
+            const generated = [];
+            for (let i = start; i < start + count; i++) {
+                const base = baseProducts[i % baseProducts.length];
+                const variation = Math.floor(Math.random() * 1000) + 1;
+                const name = `${base.name} Model ${variation}`;
+                const basePrice = base.basePrice + Math.floor(Math.random() * 1000); // Variation
+                const profitMargin = basePrice * 1.20; // 20% profit
+                const price = Math.round(profitMargin);
+                const img = base.img.replace('w=250', `w=${Math.floor(Math.random() * 100) + 200}`); // Slight variation
+                generated.push({
+                    id: i,
+                    name,
+                    price, // With 20% margin
+                    basePrice, // Original for ref
+                    img,
+                    category: base.category
+                });
+            }
+            return generated;
+        }
+
+        // Load page
+        function loadPage(page) {
+            const start = (page - 1) * productsPerPage + 1;
+            displayedProducts = generateProducts(start, productsPerPage);
+            renderProducts(displayedProducts);
+            document.getElementById('page-info').textContent = `পেজ ${page} (মোট ${totalProducts.toLocaleString()})`;
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.img}" alt="${product.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/250x200?text=${product.name}'">
+                    <h3>${product.name}</h3>
+                    <p class="price">অনলাইন দাম: ৳${product.price.toLocaleString()} (লাভ: ২০% মার্জিন সহ)</p>
+                    <button onclick="addToCart(${product.id})" class="btn">কার্টে যোগ</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Pagination
+        function prevPage() { if (currentPage > 1) { currentPage--; loadPage(currentPage); } }
+        function nextPage() { currentPage++; loadPage(currentPage); }
+
+        // Filter
+        function filterProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const maxPrice = parseInt(document.getElementById('price-range').value);
+            // Simulate filter on virtual list - regenerate for demo
+            const filtered = generateProducts(1, 100).filter(p => 
+                p.name.toLowerCase().includes(query) && 
+                (!category || p.category === category) && 
+                p.price <= maxPrice
+            );
+            renderProducts(filtered);
+        }
+
+        function updatePriceRange() {
+            const value = document.getElementById('price-range').value;
+            document.getElementById('price-value').textContent = `৳০ - ৳${value}`;
+        }
+
+        // Cart functions
+        function addToCart(id) {
+            const product = displayedProducts.find(p => p.id === id);
+            const existing = cart.find(item => item.id === id);
+            if (existing) existing.quantity++;
+            else cart.push({ ...product, quantity: 1 });
+            updateCart();
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.img}" alt="${item.name}">
+                        <h4>${item.name} (x${item.quantity})</h4>
+                        <p>৳${itemTotal.toLocaleString()}</p>
+                        <button onclick="removeFromCart(${item.id})">সরান</button>
+                    </div>
+                `;
+            });
+            document.getElementById('cart-total').textContent = `৳${total.toLocaleString()}`;
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+        }
+
+        // Sections
+        function showSection(section) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section + '-section').classList.remove('hidden');
+            if (section === 'products') loadPage(currentPage);
+            if (section === 'cart') updateCart();
+        }
+
+        // Checkout with delivery
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const delivery = document.getElementById('pathao-delivery').checked ? 'পাঠাও' : 'সেল্ফ';
+            const payment = document.getElementById('payment').value;
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            console.log(`অর্ডার: ${name}, ঠিকানা: ${address}, ডেলিভারি: ${delivery} (২-৩ দিন), পেমেন্ট: ${payment}, টোটাল: ৳${total}`);
+            alert(`অর্ডার কনফার্ম! ${delivery} থেকে ২-৩ দিনে ডেলিভারি হবে। ধন্যবাদ!`);
+            cart = [];
+            showSection('products');
+        });
+
+        function toggleMenu() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate category filter from base
+            const categories = [...new Set(baseProducts.map(p => p.category))];
+            const filter = document.getElementById('category-filter');
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+                filter.appendChild(opt);
+            });
+            loadPage(1);
+        });
+    </script>
+</body>
+</html>
